@@ -1,0 +1,23 @@
+fastapi==0.103.2
+uvicorn==0.23.2
+python-multipart==0.0.6
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+chromadb==0.4.15
+sentence-transformers==2.2.2
+openai==1.1.1
+pydantic==2.5.3
+numpy==1.26.2
+pillow==10.1.0
+pymupdf==1.23.8
+python-docx==1.1.0
+easyocr==1.7.1
+langdetect==1.0.9
+httpx==0.25.2
+loguru==0.7.2
+networkx==3.2.1
+telugu-tokenizer==0.0.5  # This might need to be verified or replaced with a more robust NLP library for Telugu
+streamlit==1.29.0
+streamlit-chat==0.1.1
+streamlit-option-menu==0.3.6 # For navigation
+streamlit-lottie==0.0.5 # For animations

@@ -1,0 +1,470 @@
+"""
+API Testing Examples for Advanced RAG Authentication System
+Use these examples with cURL, Postman, or Python requests
+"""
+
+# =============================================================================
+# AUTHENTICATION ENDPOINTS
+# =============================================================================
+
+# 1. USER SIGNUP (Register)
+# ============================================================================
+POST http://localhost:8000/api/v1/auth/signup
+Content-Type: application/json
+
+{
+  "username": "john_doe",
+  "email": "john@example.com",
+  "password": "SecurePass123",
+  "full_name": "John Doe"
+}
+
+# Expected Response (201 Created):
+{
+  "id": 1,
+  "username": "john_doe",
+  "email": "john@example.com",
+  "full_name": "John Doe",
+  "is_active": true,
+  "created_at": "2026-01-25T10:30:00"
+}
+
+# Errors:
+# 400: Username or email already registered
+# 422: Weak password or invalid input
+
+
+# 2. CHECK USERNAME AVAILABILITY
+# ============================================================================
+POST http://localhost:8000/api/v1/auth/check-username/john_doe
+Content-Type: application/json
+
+# Expected Response:
+{
+  "available": false,
+  "username": "john_doe",
+  "reason": "Username already taken"
+}
+
+# OR if available:
+{
+  "available": true,
+  "username": "jane_doe",
+  "reason": null
+}
+
+
+# 3. CHECK EMAIL AVAILABILITY
+# ============================================================================
+POST http://localhost:8000/api/v1/auth/check-email/john@example.com
+
+# Expected Response:
+{
+  "available": false,
+  "email": "john@example.com",
+  "reason": "Email already registered"
+}
+
+
+# 4. USER LOGIN
+# ============================================================================
+POST http://localhost:8000/api/v1/auth/login
+Content-Type: application/x-www-form-urlencoded
+
+username=john_doe&password=SecurePass123
+
+# Expected Response (200 OK):
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb2huX2RvZSIsInVzZXJfaWQiOjEsImV4cCI6MTc1NzU5Njk2MCwidHlwZSI6ImFjY2VzcyJ9.xxx",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb2huX2RvZSIsInVzZXJfaWQiOjEsImV4cCI6MTc1NzU5Njk2MCwidHlwZSI6InJlZnJlc2gifQ.yyy",
+  "token_type": "bearer",
+  "user": {
+    "id": 1,
+    "username": "john_doe",
+    "email": "john@example.com",
+    "full_name": "John Doe",
+    "is_active": true,
+    "created_at": "2026-01-25T10:30:00"
+  },
+  "expires_in": 604800
+}
+
+# Errors:
+# 401: Incorrect username or password
+# 403: User account is inactive
+
+
+# 5. GET CURRENT USER PROFILE (Protected)
+# ============================================================================
+GET http://localhost:8000/api/v1/auth/me
+Authorization: Bearer {access_token}
+
+# Expected Response (200 OK):
+{
+  "id": 1,
+  "username": "john_doe",
+  "email": "john@example.com",
+  "full_name": "John Doe",
+  "is_active": true,
+  "created_at": "2026-01-25T10:30:00"
+}
+
+# Errors:
+# 401: Invalid or expired token
+# 404: User not found
+
+
+# 6. VALIDATE TOKEN (Protected)
+# ============================================================================
+POST http://localhost:8000/api/v1/auth/validate-token
+Authorization: Bearer {access_token}
+
+# Expected Response (200 OK):
+{
+  "valid": true,
+  "user_id": 1,
+  "username": "john_doe",
+  "email": "john@example.com"
+}
+
+# Errors:
+# 401: Invalid token
+
+
+# 7. REFRESH ACCESS TOKEN
+# ============================================================================
+POST http://localhost:8000/api/v1/auth/refresh
+Content-Type: application/json
+
+{
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+
+# Expected Response (200 OK):
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.new_token...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer",
+  "user": { user_data },
+  "expires_in": 604800
+}
+
+# Errors:
+# 401: Invalid or expired refresh token
+
+
+# 8. USER LOGOUT (Protected)
+# ============================================================================
+POST http://localhost:8000/api/v1/auth/logout
+Authorization: Bearer {access_token}
+
+# Expected Response (200 OK):
+{
+  "message": "Successfully logged out",
+  "username": "john_doe",
+  "timestamp": "2026-01-25T10:35:00"
+}
+
+
+# =============================================================================
+# SESSION MANAGEMENT ENDPOINTS
+# =============================================================================
+
+# 1. CREATE NEW SESSION (Protected)
+# ============================================================================
+POST http://localhost:8000/api/v1/sessions/create
+Authorization: Bearer {access_token}
+
+# Expected Response (201 Created):
+{
+  "session_id": "550e8400-e29b-41d4-a716-446655440000",
+  "user_id": 1,
+  "username": "john_doe",
+  "created_at": "2026-01-25T10:40:00"
+}
+
+
+# 2. LIST ALL USER SESSIONS (Protected)
+# ============================================================================
+GET http://localhost:8000/api/v1/sessions/
+Authorization: Bearer {access_token}
+
+# Expected Response (200 OK):
+[
+  {
+    "session_id": "550e8400-e29b-41d4-a716-446655440000",
+    "user_id": 1,
+    "created_at": "2026-01-25T10:40:00",
+    "updated_at": "2026-01-25T10:45:00",
+    "message_count": 12
+  },
+  {
+    "session_id": "550e8400-e29b-41d4-a716-446655440001",
+    "user_id": 1,
+    "created_at": "2026-01-25T09:00:00",
+    "updated_at": "2026-01-25T09:15:00",
+    "message_count": 5
+  }
+]
+
+
+# 3. GET SESSION INFO (Protected)
+# ============================================================================
+GET http://localhost:8000/api/v1/sessions/550e8400-e29b-41d4-a716-446655440000
+Authorization: Bearer {access_token}
+
+# Expected Response (200 OK):
+{
+  "session_id": "550e8400-e29b-41d4-a716-446655440000",
+  "user_id": 1,
+  "created_at": "2026-01-25T10:40:00",
+  "updated_at": "2026-01-25T10:45:00",
+  "message_count": 12
+}
+
+
+# 4. GET CHAT HISTORY (Protected)
+# ============================================================================
+GET http://localhost:8000/api/v1/sessions/550e8400-e29b-41d4-a716-446655440000/messages
+Authorization: Bearer {access_token}
+
+# Expected Response (200 OK):
+[
+  {
+    "role": "user",
+    "content": "What is RAG?",
+    "timestamp": "2026-01-25T10:40:30"
+  },
+  {
+    "role": "assistant",
+    "content": "RAG stands for Retrieval-Augmented Generation...",
+    "timestamp": "2026-01-25T10:40:35"
+  }
+]
+
+
+# 5. ADD MESSAGE TO SESSION (Protected)
+# ============================================================================
+POST http://localhost:8000/api/v1/sessions/550e8400-e29b-41d4-a716-446655440000/messages
+Authorization: Bearer {access_token}
+Content-Type: application/json
+
+{
+  "role": "user",
+  "content": "What is RAG?",
+  "user_id": 1,
+  "session_id": "550e8400-e29b-41d4-a716-446655440000"
+}
+
+# Expected Response (201 Created):
+{
+  "success": true,
+  "session_id": "550e8400-e29b-41d4-a716-446655440000",
+  "message_count": 13
+}
+
+
+# 6. DELETE SESSION (Protected)
+# ============================================================================
+DELETE http://localhost:8000/api/v1/sessions/550e8400-e29b-41d4-a716-446655440000
+Authorization: Bearer {access_token}
+
+# Expected Response (204 No Content):
+[empty body]
+
+
+# 7. CLEAR SESSION MESSAGES (Protected)
+# ============================================================================
+DELETE http://localhost:8000/api/v1/sessions/550e8400-e29b-41d4-a716-446655440000/messages
+Authorization: Bearer {access_token}
+
+# Expected Response (204 No Content):
+[empty body]
+
+
+# =============================================================================
+# CURL EXAMPLES
+# =============================================================================
+
+# Sign Up
+curl -X POST "http://localhost:8000/api/v1/auth/signup" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testuser",
+    "email": "test@example.com",
+    "password": "TestPass123",
+    "full_name": "Test User"
+  }'
+
+# Login
+curl -X POST "http://localhost:8000/api/v1/auth/login" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=testuser&password=TestPass123"
+
+# Get Current User (replace TOKEN with actual access_token)
+curl -X GET "http://localhost:8000/api/v1/auth/me" \
+  -H "Authorization: Bearer TOKEN"
+
+# Create Session
+curl -X POST "http://localhost:8000/api/v1/sessions/create" \
+  -H "Authorization: Bearer TOKEN"
+
+# List Sessions
+curl -X GET "http://localhost:8000/api/v1/sessions/" \
+  -H "Authorization: Bearer TOKEN"
+
+# Refresh Token
+curl -X POST "http://localhost:8000/api/v1/auth/refresh" \
+  -H "Content-Type: application/json" \
+  -d '{"refresh_token": "REFRESH_TOKEN"}'
+
+# Logout
+curl -X POST "http://localhost:8000/api/v1/auth/logout" \
+  -H "Authorization: Bearer TOKEN"
+
+
+# =============================================================================
+# PYTHON REQUESTS EXAMPLES
+# =============================================================================
+
+import requests
+
+# Configuration
+BASE_URL = "http://localhost:8000/api/v1"
+
+# 1. Sign Up
+def signup(username, email, password, full_name):
+    response = requests.post(
+        f"{BASE_URL}/auth/signup",
+        json={
+            "username": username,
+            "email": email,
+            "password": password,
+            "full_name": full_name
+        }
+    )
+    return response.json()
+
+# 2. Login
+def login(username, password):
+    response = requests.post(
+        f"{BASE_URL}/auth/login",
+        data={"username": username, "password": password}
+    )
+    return response.json()
+
+# 3. Get Current User
+def get_current_user(access_token):
+    headers = {"Authorization": f"Bearer {access_token}"}
+    response = requests.get(
+        f"{BASE_URL}/auth/me",
+        headers=headers
+    )
+    return response.json()
+
+# 4. Create Session
+def create_session(access_token):
+    headers = {"Authorization": f"Bearer {access_token}"}
+    response = requests.post(
+        f"{BASE_URL}/sessions/create",
+        headers=headers
+    )
+    return response.json()
+
+# 5. List Sessions
+def list_sessions(access_token):
+    headers = {"Authorization": f"Bearer {access_token}"}
+    response = requests.get(
+        f"{BASE_URL}/sessions/",
+        headers=headers
+    )
+    return response.json()
+
+# 6. Add Message to Session
+def add_message(access_token, session_id, role, content, user_id):
+    headers = {"Authorization": f"Bearer {access_token}"}
+    response = requests.post(
+        f"{BASE_URL}/sessions/{session_id}/messages",
+        headers=headers,
+        json={
+            "role": role,
+            "content": content,
+            "user_id": user_id,
+            "session_id": session_id
+        }
+    )
+    return response.json()
+
+# 7. Refresh Token
+def refresh_access_token(refresh_token):
+    response = requests.post(
+        f"{BASE_URL}/auth/refresh",
+        json={"refresh_token": refresh_token}
+    )
+    return response.json()
+
+# Usage Example
+if __name__ == "__main__":
+    # 1. Sign up
+    signup_result = signup("alice", "alice@example.com", "AlicePass123", "Alice")
+    print(f"Signup: {signup_result}")
+    
+    # 2. Login
+    login_result = login("alice", "AlicePass123")
+    access_token = login_result["access_token"]
+    refresh_token = login_result["refresh_token"]
+    print(f"Login successful, got token")
+    
+    # 3. Get current user
+    user = get_current_user(access_token)
+    print(f"Current user: {user['username']}")
+    
+    # 4. Create session
+    session = create_session(access_token)
+    session_id = session["session_id"]
+    print(f"Created session: {session_id}")
+    
+    # 5. Add message
+    msg = add_message(
+        access_token,
+        session_id,
+        "user",
+        "What is AI?",
+        user["id"]
+    )
+    print(f"Added message: {msg}")
+    
+    # 6. Refresh token
+    new_tokens = refresh_access_token(refresh_token)
+    print(f"Token refreshed")
+
+
+# =============================================================================
+# TESTING CHECKLIST
+# =============================================================================
+
+[ ] Test Sign Up with valid credentials
+[ ] Test Sign Up with duplicate username
+[ ] Test Sign Up with duplicate email
+[ ] Test Sign Up with weak password
+[ ] Test Login with correct credentials
+[ ] Test Login with incorrect password
+[ ] Test Login with non-existent user
+[ ] Test Get Current User with valid token
+[ ] Test Get Current User with invalid token
+[ ] Test Get Current User with expired token
+[ ] Test Create Session
+[ ] Test List Sessions (empty)
+[ ] Test List Sessions (multiple)
+[ ] Test Add Message to Session
+[ ] Test Get Session Messages
+[ ] Test Delete Session
+[ ] Test Delete Session Messages
+[ ] Test Refresh Token with valid refresh token
+[ ] Test Refresh Token with invalid refresh token
+[ ] Test Validate Token
+[ ] Test Logout
+[ ] Test API from Streamlit frontend
+[ ] Test token auto-refresh in Streamlit
+[ ] Test navigation between pages
+[ ] Test user isolation (verify can't access other users' data)
