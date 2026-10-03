@@ -1,5 +1,0 @@
-from backend.auth.google_oauth import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI
-
-print(f'CLIENT_ID: {"SET" if GOOGLE_CLIENT_ID else "NOT SET"}')
-print(f'CLIENT_SECRET: {"SET" if GOOGLE_CLIENT_SECRET else "NOT SET"}')
-print(f'REDIRECT_URI: {GOOGLE_REDIRECT_URI}')
